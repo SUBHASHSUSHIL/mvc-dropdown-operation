@@ -1,0 +1,207 @@
+//AspDotnetCrud
+1.Create Database and Store Procedure
+2.Create Project in Visual Studio 2022
+3.Create Asp .Net Web Application  Choose in Web Empty
+
+4.Create WebForm1    create UserInterface(Html+CSS)
+5.AdoConnectivity
+
+
+//WebForm1.aspx
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="WebForm1.aspx.cs" Inherits="AspDotnetCrudOperation.Models.WebForm1" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title></title>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div>
+            <table border="1">
+                <tr>
+                    <th colspan="2">Crud Operation</th>
+                </tr>
+                <tr>
+                    <th>Id</th>
+                    <td>
+                        <asp:TextBox ID="txtid" runat="server"></asp:TextBox>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Name:</th>
+                    <td>
+                        <asp:TextBox ID="txtname" runat="server"></asp:TextBox>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Designation:</th>
+                    <td>
+                        <asp:TextBox ID="txtdesignation" runat="server"></asp:TextBox>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Salary:</th>
+                    <td>
+                        <asp:TextBox ID="txtsalary" runat="server"></asp:TextBox>
+                    </td>
+                </tr>
+                <tr>
+                    <th>City:</th>
+                    <td>
+                        <asp:TextBox ID="txtcity" runat="server"></asp:TextBox>
+                    </td>
+                </tr>
+                <tr>
+                    <th>State</th>
+                    <td>
+                        <asp:TextBox ID="txtstate" runat="server"></asp:TextBox>
+                    </td>
+                </tr>
+                <tr>
+                    <th colspan="2">
+                        <asp:Button ID="create" runat="server" Text="Create" OnClick="create_Click" />
+                        <asp:Button ID="edit" runat="server" Text="Edit" OnClick="edit_Click" />
+                        <asp:Button ID="cancel" runat="server" Text="Select" OnClick="cancel_Click" />
+                        <asp:Button ID="delete" runat="server" Text="Delete" OnClick="delete_Click" />
+                    </th>
+                </tr>
+            </table>
+        </div>
+    </form>
+</body>
+</html>
+
+
+//WebForm1.aspx.cs
+
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Data;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+namespace AspDotnetCrudOperation.Models
+{
+    public partial class WebForm1 : System.Web.UI.Page
+    {
+        SqlConnection con = new SqlConnection("server=DESKTOP-F1LI6MI;database=ImageDbAspCore;integrated security=true;");
+        public string Query { get; set; }
+        protected void Page_Load(object sender, EventArgs e)
+        {
+
+
+        }
+
+        protected void create_Click(object sender, EventArgs e)
+        {
+            Query = "Emp_insert";
+            using(SqlCommand cmd = new SqlCommand(Query,con))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@Name", txtname.Text);
+                cmd.Parameters.AddWithValue("@Designation", txtdesignation.Text);
+                cmd.Parameters.AddWithValue("@Salary", txtsalary.Text);
+                cmd.Parameters.AddWithValue("@City", txtcity.Text);
+                cmd.Parameters.AddWithValue("@State", txtstate.Text);
+                if(con.State == ConnectionState.Closed)
+                {
+                    con.Open();
+                }
+                cmd.ExecuteNonQuery();
+                Response.Write("<script>alert('Created Successfully..')</script>");
+                if(con.State == ConnectionState.Open)
+                { 
+                    con.Close();
+                    Clear();
+                }
+            }
+        }
+
+        protected void edit_Click(object sender, EventArgs e)
+        {
+            Query = "Emp_Update";
+            using(SqlCommand cmd = new SqlCommand(Query, con))
+            {
+                cmd.CommandType= CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@Id",txtid.Text);
+                cmd.Parameters.AddWithValue("@Name", txtname.Text);
+                cmd.Parameters.AddWithValue("@Designation", txtdesignation.Text);
+                cmd.Parameters.AddWithValue("@Salary", txtsalary.Text);
+                cmd.Parameters.AddWithValue("@City", txtcity.Text);
+                cmd.Parameters.AddWithValue("@State", txtstate.Text);
+                if(con.State == ConnectionState.Closed)
+                {
+                    con.Open() ;
+                }
+                cmd.ExecuteNonQuery();
+                Response.Write("<script>alert('Updated Successfully..')</script>");
+                if(con.State == ConnectionState.Open)
+                {
+                    con.Close() ;
+                }
+            }
+        }
+
+        
+
+        protected void delete_Click(object sender, EventArgs e)
+        {
+            Query = "Emp_Delete";
+            using(SqlCommand cmd = new SqlCommand(Query,con))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@Id",txtid.Text) ;
+                if(con.State == ConnectionState.Closed)
+                { con.Open() ; }
+                cmd.ExecuteNonQuery();
+                Response.Write("<script>alert('Delete Successfully..')</script>");
+                if(con.State == ConnectionState.Open)
+                {
+                    con.Close();
+                }
+
+            }
+        }
+
+        private void Clear()
+        {
+            txtname.Text = string.Empty;
+            txtdesignation.Text = string.Empty;
+            txtsalary.Text = string.Empty;
+            txtcity.Text = string.Empty;
+            txtstate.Text = string.Empty;
+        }
+
+        protected void cancel_Click(object sender, EventArgs e)
+        {
+            Query = "Emp_Select";
+            using(SqlCommand cmd = new SqlCommand(Query,con))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@Id",txtid.Text);
+                if(con.State == ConnectionState.Closed)
+                {
+                    con.Open();
+                }
+                SqlDataReader dr = cmd.ExecuteReader();
+                if(dr.Read())
+                {
+                    txtname.Text = dr["Name"].ToString();
+                    txtdesignation.Text = dr["Designation"].ToString();
+                    txtsalary.Text = dr["Salary"].ToString() ;
+                    txtcity.Text = dr["City"].ToString();
+                    txtstate.Text = dr["State"].ToString();
+                }
+                if(con.State == ConnectionState.Open)
+                {
+                    con.Close();
+                }
+            }
+        }
+    }
+}
