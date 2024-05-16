@@ -1,0 +1,221 @@
+//MVC Crud Operation
+1.Create Database and Store Procedure
+2.Create Project in Visual Studio 2022
+3.Asp .net web Application Choose 
+4.Install Bootstrap -> nudget package -> Browser
+5.Create Model 
+6.Create Database in Ado Connectivity in Class
+7.Create Controller     then Execute
+
+//Model
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+
+namespace MvcCrudOperation.Models
+{
+    public class Employee
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Designation { get; set; }
+        public long Salary { get; set; }
+        public string City { get; set; }
+        public string State { get; set; }
+    }
+}
+
+//Database
+using MvcCrudOperation.Models;
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Data;
+using System.Linq;
+using System.Web;
+
+namespace MvcCrudOperation.SqlData
+{
+    public class AdoConnection
+    {
+        SqlConnection con = new SqlConnection("server=DESKTOP-F1LI6MI;Database=ImageDbAspCore;integrated security=true;");
+        public string Query { get; set; }
+
+        public bool Emp_Insert(Employee emp)
+        {
+            Query = "Emp_insert";
+            using(SqlCommand cmd = new SqlCommand(Query, con))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@Name",emp.Name);
+                cmd.Parameters.AddWithValue("@Designation", emp.Designation);
+                cmd.Parameters.AddWithValue("@Salary",emp.Salary);
+                cmd.Parameters.AddWithValue("@City",emp.City);
+                cmd.Parameters.AddWithValue("@State",emp.State);
+                if(con.State == ConnectionState.Closed)
+                {
+                    con.Open();
+                }
+                int res = (int)cmd.ExecuteNonQuery();
+                if(res == 1)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+
+            }
+        }
+
+        public bool EmpUpdate(Employee emp)
+        {
+            Query = "Emp_Update";
+            using(SqlCommand cmd = new SqlCommand(Query, con))
+            {
+                cmd.CommandType= CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@Id",emp.Id);
+                cmd.Parameters.AddWithValue("@Name", emp.Name);
+                cmd.Parameters.AddWithValue("@Designation",emp.Designation);
+                cmd.Parameters.AddWithValue("@Salary", emp.Salary);
+                cmd.Parameters.AddWithValue("@City", emp.City);
+                cmd.Parameters.AddWithValue("@State", emp.State);
+                if(con.State == ConnectionState.Closed)
+                {
+                    con.Open() ;
+                }
+                int res = (int)cmd.ExecuteNonQuery();
+                if(res == 1)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public bool EmpDelete(int Id)
+        {
+            Employee emp = new Employee();
+            Query = "Emp_Delete";
+            using( SqlCommand cmd = new SqlCommand(Query,con))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@Id", emp.Id);
+                if(con.State == ConnectionState.Closed)
+                {
+                    con.Open();
+                }
+                int res = (int)cmd.ExecuteNonQuery();
+                if(res == 1)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public List<Employee> GetAll()
+        {
+            List<Employee> list = new List<Employee>();
+            Query = "Emp_SelectAll";
+            using(SqlCommand cmd = new SqlCommand(Query, con))
+            {
+                cmd.CommandType= CommandType.StoredProcedure;
+                SqlDataAdapter adp = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                adp.Fill(dt);
+                foreach(DataRow dr in dt.Rows)
+                {
+                    list.Add(new Employee
+                    {
+                        Id = Convert.ToInt32(dr["Id"]),
+                        Name = dr["Name"].ToString(),
+                        Designation = dr["Designation"].ToString(),
+                        Salary = Convert.ToInt32(dr["Salary"]),
+                        City = dr["City"].ToString(),
+                        State = dr["state"].ToString()
+                    });
+                }
+                return list;
+            }
+        }
+    }
+}
+
+//Controller
+using MvcCrudOperation.Models;
+using MvcCrudOperation.SqlData;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+
+namespace MvcCrudOperation.Controllers
+{
+    public class HomeController : Controller
+    {
+        AdoConnection conn = new AdoConnection();
+        // GET: Home
+        public ActionResult Index()
+        {
+            return View(conn.GetAll());
+        }
+
+        [HttpGet]
+        public ActionResult Create()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult Create(Employee emp)
+        {
+            if(ModelState.IsValid)
+            {
+                conn.Emp_Insert(emp);
+            }
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public ActionResult Edit(int Id)
+        {
+            return View(conn.GetAll().Find(x => x.Id == Id));
+        }
+
+        [HttpPost]
+        public ActionResult Edit(Employee emp)
+        {
+            conn.EmpUpdate(emp);
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public ActionResult Delete(int Id)
+        {
+            return View(conn.GetAll().Find(x =>x.Id == Id));
+        }
+
+        [HttpPost]
+        public ActionResult Delete(int Id, Employee emp)
+        {
+            conn.EmpDelete(Id);
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public ActionResult Details(int Id)
+        {
+            return View(conn.GetAll().Find(x => x.Id==Id));
+        }
+    }
+}
