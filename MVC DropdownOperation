@@ -1,0 +1,428 @@
+//MVC DropdownOperation
+
+//Database:->
+create database SagarDotnet;
+use SagarDotnet
+
+create table Department(DepartmentId int identity(1,1) primary key,Depart_Name varchar(max) not null);
+insert into Department(Depart_Name) values ('lab'),('Accountant'),('Courses'),('Class');
+
+
+create table Designation(DesignationId int identity(1,1) primary key,Desig_Name varchar(max) not null);
+insert into Designation(Desig_Name) values ('Office Boy'),('Teaching Staff'),('HR Team')
+
+create table EmployeeCrud(EmpId int identity(1,1) primary key,EmpName varchar(max) not null,DepartmentId int foreign key references Department(DepartmentId),DesignationId int 
+foreign key references Designation(DesignationId));
+
+insert into EmployeeCrud(EmpName,DepartmentId,DesignationId) values ('Sushil Thakur',1,2)
+
+//VISUAL STUDIO PROGRAM
+1.Step:->  Install bootstrap
+2.Step:-> models folder right click then add -> new items -> Data -> Ado .net entity data model -> EF Designer from data -> next -> New Connection ->server name -> Trust server certificate tick lagana hai -> choose in database
+3.Step:-> Create new modelClass in Dropdrown name insert 
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+
+namespace SagarDotnetStudent.Models
+{
+    public class CrudEmp
+    {
+        public int EmpId { get; set; }
+        public string Emp_Name { get; set; }
+
+        public int DepartmentId { get; set; }
+        public int DesignationId { get; set; }
+    }
+}
+
+4.Step:-> Create Controller in insert data
+
+using SagarDotnetStudent.Models;
+using System;
+using System.Net;
+using System.Data.Entity;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+
+namespace SagarDotnetStudent.Controllers
+{
+    public class HomeController : Controller
+    {
+        private readonly SagarDotnetEntities _dotnetEntities = new SagarDotnetEntities();
+        SagarDotnetEntities db = new SagarDotnetEntities();
+        // GET: Home
+        public ActionResult Index()
+        {
+            var emp = _dotnetEntities.EmployeeCruds.ToList();
+            return View(emp);
+        }
+
+        public ActionResult Create()
+        {
+            List<Department> departmentList = db.Departments.ToList();
+            ViewBag.Departments = new SelectList(departmentList, "DepartmentId", "Depart_Name");
+            List<Designation> designations = db.Designations.ToList();
+            ViewBag.Designations = new SelectList(designations, "DesignationId", "Desig_Name");
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult Create(EmployeeCrud entity)
+        {
+            if (ModelState.IsValid)
+            {
+                _dotnetEntities.EmployeeCruds.Add(entity);
+                _dotnetEntities.SaveChanges();
+                return RedirectToAction("Index");
+            }
+            List<Department> departmentList = db.Departments.ToList();
+            ViewBag.Departments = new SelectList(departmentList, "DepartmentId", "Depart_Name");
+            List<Designation> designations = db.Designations.ToList();
+            ViewBag.Designations = new SelectList(designations, "DesignationId", "Desig_Name");
+
+            return View(entity);
+        }
+        [HttpGet]
+        public ActionResult Edit(int? id)
+        {
+            if(id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            var employee = _dotnetEntities.EmployeeCruds.SingleOrDefault(x => x.EmpId == id);
+            if (employee == null)
+            {
+                return HttpNotFound();
+            }
+            List<Department> departmentList = db.Departments.ToList();
+            ViewBag.Departments = new SelectList(departmentList, "DepartmentId", "Depart_Name");
+            List<Designation> designations = db.Designations.ToList();
+            ViewBag.Designations = new SelectList(designations, "DesignationId", "Desig_Name");
+            return View(employee);
+        }
+
+        [HttpPost]
+        public ActionResult Edit(EmployeeCrud entity)
+        {
+            if (ModelState.IsValid)
+            {
+                _dotnetEntities.Entry(entity).State = EntityState.Modified;
+                _dotnetEntities.SaveChanges();
+                return RedirectToAction("Index");
+            }
+            List<Department> departmentList = db.Departments.ToList();
+            ViewBag.Departments = new SelectList(departmentList, "DepartmentId", "Depart_Name");
+            List<Designation> designations = db.Designations.ToList();
+            ViewBag.Designations = new SelectList(designations, "DesignationId", "Desig_Name");
+            return View(entity);
+        }
+
+        public ActionResult Details(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            var employee = _dotnetEntities.EmployeeCruds.SingleOrDefault(x => x.EmpId == id);
+            if (employee == null)
+            {
+                return HttpNotFound();
+            }
+            List<Department> departmentList = db.Departments.ToList();
+            ViewBag.Departments = new SelectList(departmentList, "DepartmentId", "Depart_Name");
+            List<Designation> designations = db.Designations.ToList();
+            ViewBag.Designations = new SelectList(designations, "DesignationId", "Desig_Name");
+            return View(employee);
+        }
+
+        [HttpGet]
+        public ActionResult Delete(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            var employee = _dotnetEntities.EmployeeCruds.SingleOrDefault(x => x.EmpId == id);
+            if (employee == null)
+            {
+                return HttpNotFound();
+            }
+            List<Department> departmentList = db.Departments.ToList();
+            ViewBag.Departments = new SelectList(departmentList, "DepartmentId", "Depart_Name");
+            List<Designation> designations = db.Designations.ToList();
+            ViewBag.Designations = new SelectList(designations, "DesignationId", "Desig_Name");
+            return View(employee);
+        }
+
+        [HttpPost]
+        public ActionResult Delete(int id)
+        {
+            var employee = _dotnetEntities.EmployeeCruds.SingleOrDefault(x => x.EmpId == id);
+            _dotnetEntities.EmployeeCruds.Remove(employee ?? throw new InvalidProgramException());
+            _dotnetEntities.SaveChanges();
+            return RedirectToAction("Index");
+        }
+
+
+    }
+}
+
+
+//View Create:->
+
+//Index
+@model IEnumerable<SagarDotnetStudent.Models.EmployeeCrud>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.EmpName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Department.Depart_Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Designation.Desig_Name)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.EmpName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Department.Depart_Name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Designation.Desig_Name)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.EmpId }) |
+            @Html.ActionLink("Details", "Details", new { id=item.EmpId }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.EmpId })
+        </td>
+    </tr>
+}
+
+</table>
+
+//Create
+@model SagarDotnetStudent.Models.EmployeeCrud
+
+@{
+    ViewBag.Title = "Create";
+}
+
+<h2>Create</h2>
+
+@using (Html.BeginForm()) 
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="form-horizontal">
+        <h4>EmployeeCrud</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.EmpName, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.EmpName, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.EmpName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.DepartmentId, "DepartmentId", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownList("DepartmentId", ViewBag.Departments as SelectList, "--Department--", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.DepartmentId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.DesignationId, "DesignationId", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownList("DesignationId", ViewBag.Designations as SelectList, "--Designation--", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.DesignationId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+
+//Edit
+@model SagarDotnetStudent.Models.EmployeeCrud
+
+@{
+    ViewBag.Title = "Edit";
+}
+
+<h2>Edit</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="form-horizontal">
+        <h4>EmployeeCrud</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @Html.HiddenFor(model => model.EmpId)
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.EmpName, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.EmpName, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.EmpName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.DepartmentId, "DepartmentId", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownList("DepartmentId", ViewBag.Departments as SelectList, "--Department--", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.DepartmentId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.DesignationId, "DesignationId", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownList("DesignationId", ViewBag.Designations as SelectList, "--Designation--", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.DesignationId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Save" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+//Details
+@model SagarDotnetStudent.Models.EmployeeCrud
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>EmployeeCrud</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.EmpName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.EmpName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Department.Depart_Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Department.Depart_Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Designation.Desig_Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Designation.Desig_Name)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.EmpId }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>
+
+
+//Delete
+@model SagarDotnetStudent.Models.EmployeeCrud
+
+@{
+    ViewBag.Title = "Delete";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>EmployeeCrud</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.EmpName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.EmpName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Department.Depart_Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Department.Depart_Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Designation.Desig_Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Designation.Desig_Name)
+        </dd>
+
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>
+
